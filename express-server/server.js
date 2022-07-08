@@ -1,4 +1,3 @@
-const e = require("express");
 const express = require("express");
 
 const app = express();
@@ -6,6 +5,7 @@ const app = express();
 const path = require("path");
 
 const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
 
 const { logger } = require("./middleware/logEvents");
 
@@ -15,20 +15,6 @@ const PORT = process.env.PORT || 3000;
 
 // custom middleware logger
 app.use(logger);
-
-// cross origin resource sharing middleware
-const whitelist = ["http://localhost:3000", "https://www.google.com"];
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
 
 app.use(cors(corsOptions));
 
@@ -43,20 +29,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // serve static files
-app.use(express.static(path.join(__dirname, "/public")));
+app.use("/", express.static(path.join(__dirname, "/public")));
 
-app.get("^/$|/index(.html)?", (req, res) => {
-  //   res.sendFile("./views/index.html", { root: __dirname });
-  res.sendFile(path.join(__dirname, "views", "index.html"));
-});
+// routes
+app.use("/", require("./routes/root"));
 
-app.get("/new-page(.html)?", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "new-page.html"));
-});
-
-app.get("/old-page(.html)?", (req, res) => {
-  res.redirect(301, "/new-page.html");
-});
+app.use("/employees", require("./routes/api/employees"));
 
 app.all("*", (req, res) => {
   res.status(404);
