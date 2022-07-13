@@ -1,9 +1,9 @@
 // cross origin resource sharing middleware
-const whitelist = ["http://localhost:3000", "https://www.google.com"];
+const allowedOrigins = require('./allowedOrigins')
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
